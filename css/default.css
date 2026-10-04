@@ -227,14 +227,27 @@ section {
 }
 
 /* 画像レイアウト */
-.image-pair { display: flex; justify-content: center; gap: 4px; margin-bottom: 4px; }
-.image-pair img { flex: 1 1 0; max-width: calc(50% - 2px); height: auto; }
+.image-pair { display: flex; align-items: stretch; justify-content: center; gap: 4px; margin-bottom: 4px; }
+.image-pair img {
+  flex: 1 1 0;
+  max-width: calc(50% - 2px);
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+}
 
 .image-grid {
   display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto;
   gap: 4px; max-width: 100%; margin-bottom: 4px;
 }
 .image-grid img { width: 100%; height: auto; object-fit: cover; }
+
+/* image-grid を16:9でそろえる場合は ratio-16-9 を追加 */
+.image-grid.ratio-16-9 img {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+}
 
 /* フォーム埋め込み */
 .form-container { width: 100%; max-width: 100%; box-sizing: border-box; margin: 20px 0; }

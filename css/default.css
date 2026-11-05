@@ -335,8 +335,16 @@ section {
   display: inline-block; cursor: pointer; user-select: none;
   background: #eef7f0; color: #27443a; border: 1px solid #dcece3;
   border-radius: 999px; padding: 0.35em 0.8em; margin: 4px;
+  font: inherit; line-height: 1.4; text-align: center;
 }
 #tag-list .tag.selected { background: var(--leaf); color: #fff; border-color: transparent; }
+
+.data-status { margin: 12px 0 0; color: var(--ink-sub); }
+.article-error {
+  padding: 1.5rem 0;
+  color: var(--ink-sub);
+  text-align: center;
+}
 
 /* ---------- 汎用パーツ ---------- */
 .btn-container, .back-button-container, .share-container {
@@ -382,14 +390,6 @@ section {
   text-decoration: none !important;
 }
 .back-button:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-
-.to-top {
-  position: fixed; right: 20px; bottom: 20px; width: 48px; height: 48px;
-  background: #fff; border: 1px solid var(--line); border-radius: 50%;
-  box-shadow: var(--shadow-md); cursor: pointer; z-index: 1000;
-  display: grid; place-items: center; transition: opacity 0.3s, transform 0.3s;
-}
-.to-top.hide { opacity: 0; pointer-events: none; transform: translateY(10px); }
 
 /* ---------- フッター ---------- */
 .site-footer {

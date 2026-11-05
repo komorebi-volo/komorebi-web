@@ -154,6 +154,7 @@
     <!-- 活動報告：チェキ化 -->
     <section class="about-details">
       <h2><a href="report.html">活動報告</a></h2>
+      <p id="latest-reports-status" class="data-status" role="status" aria-live="polite" aria-atomic="true"></p>
       <ul id="latest-reports" class="cheki-mode" aria-live="polite"></ul>
     </section>
 
@@ -164,8 +165,6 @@
       <p>団体メールアドレス：<a href="mailto:komorebi.volo@gmail.com">komorebi.volo@gmail.com</a></p>
     </section>
   </main>
-
-  <button id="toTop" class="to-top">↑</button>
 
   <footer class="site-footer">
     <p>© こもれび / Komorebi</p>
@@ -249,6 +248,25 @@
       tryNext();
     }
 
+    const hasText = value => typeof value === 'string' && value.trim().length > 0;
+    const isValidArticle = article => (
+      article &&
+      typeof article === 'object' &&
+      hasText(article.date) &&
+      hasText(article.title) &&
+      hasText(article.url) &&
+      hasText(article.img) &&
+      Array.isArray(article.tag) &&
+      article.tag.every(hasText)
+    );
+    const parseArticles = data => {
+      const articles = Array.isArray(data) ? data : (data && (data.articles || data.items));
+      if (!Array.isArray(articles) || !articles.every(isValidArticle)) {
+        throw new Error('記事データの形式が不正です');
+      }
+      return articles;
+    };
+
     function renderCheki(listEl, items){
       listEl.classList.add('cheki-mode');
       // display:none !important を打ち消し
@@ -284,43 +302,27 @@
         listEl.appendChild(li);
       });
 
-      if (!listEl.children.length){
-        // 0件ならダミー1枚
-        listEl.innerHTML = `
-          <li class="cheki" style="--rot:1.2deg" data-tilt="l">
-            <figure class="cheki__window">
-              <img class="cheki__img" src="${PLACEHOLDER_2}" alt="活動写真" loading="lazy">
-            </figure>
-            <div class="cheki__caption">
-              <span class="cheki__title" role="text">活動記録を準備中です</span>
-              <span class="cheki__meta">${new Date().toLocaleDateString('ja-JP')}</span>
-            </div>
-          </li>`;
-      }
     }
 
     function main(){
       const list = document.getElementById(UL_ID);
+      const status = document.getElementById('latest-reports-status');
       if (!list) return;
 
       fetch('articles.json')
-        .then(r => r.json())
+        .then(r => {
+          if (!r.ok) throw new Error('記事データを取得できませんでした');
+          return r.json();
+        })
         .then(data => {
-          let arr = [];
-          if (Array.isArray(data)) arr = data;
-          else if (Array.isArray(data?.articles)) arr = data.articles;
-          else if (Array.isArray(data?.items)) arr = data.items;
+          const arr = parseArticles(data);
 
+          if (status) status.textContent = '';
           renderCheki(list, arr);
         })
         .catch(() => {
-          // 最低限の既知サンプル（必要に応じて編集/削除）
-          const fallback = [
-            {date:'2025.02.18', title:'スタディツアー', url:'/report_list/250218/index.html', photo:'1.jpg'},
-            {date:'2025.05.04', title:'清掃活動',       url:'/report_list/250504/index.html', photo:'1.jpg'},
-            {date:'2025.08.11', title:'門前での活動',   url:'/report_list/250811/index.html', photo:'monzen.jpg'}
-          ];
-          renderCheki(list, fallback);
+          if (status) status.textContent = '活動報告を読み込めませんでした。';
+          list.innerHTML = '';
         });
     }
 

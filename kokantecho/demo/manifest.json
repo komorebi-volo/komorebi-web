@@ -1,0 +1,35 @@
+{
+  "name": "一人一花 交換手帖 デモ",
+  "short_name": "交換手帖",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fffafd",
+  "theme_color": "#f6dce8",
+  "description": "一人一花 交換手帖のWebデモ版です。",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

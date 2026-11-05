@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const navbar = document.querySelector(".navbar, .menu");
     if (!menuToggle || !navbar) return;
 
-    const mq = window.matchMedia("(max-width: 768px)");
+    const mobileBreakpoint = navbar.classList.contains("menu") ? 880 : 768;
+    const mq = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`);
 
     const openMenu = () => {
       navbar.classList.add("active", "open");
@@ -82,6 +83,25 @@ document.addEventListener("DOMContentLoaded", function () {
   // cheki-modeクラスがある場合は標準の描画ロジックを実行しない
   const isChekiMode = listEl && listEl.classList.contains('cheki-mode');
 
+  const hasText = value => typeof value === 'string' && value.trim().length > 0;
+  const isValidArticle = article => (
+    article &&
+    typeof article === 'object' &&
+    hasText(article.date) &&
+    hasText(article.title) &&
+    hasText(article.url) &&
+    hasText(article.img) &&
+    Array.isArray(article.tag) &&
+    article.tag.every(hasText)
+  );
+  const parseArticles = data => {
+    const articles = Array.isArray(data) ? data : (data && (data.articles || data.items));
+    if (!Array.isArray(articles) || !articles.every(isValidArticle)) {
+      throw new Error('記事データの形式が不正です');
+    }
+    return articles;
+  };
+
   if (listEl && !isChekiMode) {
     // パス解決：階層に応じて articles.json を探す
     const path = window.location.pathname;
@@ -99,11 +119,22 @@ document.addEventListener("DOMContentLoaded", function () {
         return res.json();
       })
       .then(data => {
-        allArticles = Array.isArray(data) ? data : (data.articles || data.items || []);
+        allArticles = parseArticles(data);
         displayArticles(allArticles);
         if (tagListEl) displayTags(allArticles);
       })
-      .catch(err => console.warn('Articles could not be loaded:', err));
+      .catch(err => {
+        console.warn('Articles could not be loaded:', err);
+        if (tagListEl) tagListEl.innerHTML = '';
+        if (listEl) {
+          listEl.innerHTML = '';
+          const errorItem = document.createElement('li');
+          errorItem.className = 'article-error';
+          errorItem.textContent = '活動報告を読み込めませんでした。時間をおいて再度お試しください。';
+          listEl.appendChild(errorItem);
+        }
+        updateHitCount(0);
+      });
   }
 
   function displayArticles(articles) {
@@ -146,23 +177,27 @@ document.addEventListener("DOMContentLoaded", function () {
     tagListEl.innerHTML = '';
 
     tagSet.forEach(tag => {
-      const span = document.createElement('span');
-      span.classList.add('tag');
-      span.textContent = tag;
-      span.addEventListener('click', () => toggleTag(tag, span));
-      tagListEl.appendChild(span);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.classList.add('tag');
+      button.setAttribute('aria-pressed', 'false');
+      button.textContent = tag;
+      button.addEventListener('click', () => toggleTag(tag, button));
+      tagListEl.appendChild(button);
     });
   }
 
   function toggleTag(tag, element) {
     const index = selectedTags.indexOf(tag);
-    if (index === -1) {
+    const isSelected = index === -1;
+    if (isSelected) {
       selectedTags.push(tag);
       element.classList.add('selected');
     } else {
       selectedTags.splice(index, 1);
       element.classList.remove('selected');
     }
+    element.setAttribute('aria-pressed', String(isSelected));
 
     if (searchInputEl) {
       searchInputEl.innerHTML = '';
@@ -192,20 +227,4 @@ document.addEventListener("DOMContentLoaded", function () {
     if (el) el.textContent = `ヒット件数: ${count}`;
   }
 
-  /* ============================================================
-     3. 「戻る」ボタンの制御
-     ============================================================ */
-  const backButton = document.getElementById('backButton');
-  if (backButton) {
-    backButton.addEventListener('click', () => {
-      const path = window.location.pathname;
-      if (path.includes('/report_list/')) {
-        window.location.href = '../../report.html';
-      } else if (path.includes('/kokantecho/') || path.includes('/meguri/')) {
-        window.location.href = '../report.html';
-      } else {
-        window.location.href = 'report.html';
-      }
-    });
-  }
 });
